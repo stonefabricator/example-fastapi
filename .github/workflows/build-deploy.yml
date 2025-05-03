@@ -79,6 +79,12 @@ jobs:
     steps:
       - name: pulling git repo
         uses: actions/checkout@v4
+      # if you want to manually deploy to heroku:
+      # pull our github repo
+      # install heroku cli
+      # login to heroku
+      # add git remote for heroku
+      # git push heroku main
       - name: Install Heroku CLI # <- IMPORTANT!!! Make sure the cli is installed before using the action
         run: |
           curl https://cli-assets.heroku.com/install.sh | sh
@@ -88,9 +94,15 @@ jobs:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
           heroku_email: ${{secrets.HEROKU_EMAIL}}
-      # if you want to manually:
-      # pull our github repo
-      # install heroku cli
-      # login to heroku
-      # add git remote for heroku
-      # git push heroku main
+      
+      - name: deploy to ubuntu server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USERNAME }}
+          password: ${{ secrets.PROD_PASSWORD }}
+          script: |
+            cd app/src
+            git pull
+            echo ${{ secrets.PROD_PASSWORD }} | sudo -S systemctl restart api
+
